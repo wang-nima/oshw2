@@ -1,0 +1,234 @@
+Guideline for Warmup #2
+=======================
+
+Total points: 100
+
++---------------------+
+| General Guidelines: |
++---------------------+
+
+1) The points below are maximum points.  If something sort of works, please
+   try to give partial credits.  (This is at the grader's discretion.)
+
+2) Do the "plus points" first, then do the "minus points".
+
+3) Please read the student's README first to see if you need to do something
+   different to get their code to work and what the known problems are.
+
+4) The scripts below are for csh/tcsh.  If you use bash, please modify
+   them where necessary.
+
+5) The posted grading guidelines is not perfect.  We will try our best to
+   stick to the grading guidelines.  Sometimes, after we started grading
+   some of the submissions, we realize that we missed something (most often
+   in "minus points").  The bottomline is that we reserve the right to add
+   or change things in the grading guidelines as we see fit.
+
++--------------+
+| Plus points: |
++--------------+
+
+Basic running of the code : +100 points (+10 points for each run)
+        (for these, just see if they basically produce reasonable
+            outputs, we will check the value of the statistics with
+            minus points later)
+    ./warmup2 -n 4 -r 7 -B 7 -P 5 -lambda 1.667 -mu 8.5 
+    ./warmup2 -mu 0.85 -r 0.5 -P 5 -lambda 16.67 -B 7 -n 4 
+
+    ./warmup2 -B 3 -t ~csci570b/public/cs402/warmup2/f0.txt 
+    ./warmup2 -t ~csci570b/public/cs402/warmup2/f1.txt -B 2 
+    ./warmup2 -B 1 -t ~csci570b/public/cs402/warmup2/f2.txt 
+    ./warmup2 -t ~csci570b/public/cs402/warmup2/f3.txt 
+    ./warmup2 -r 5 -B 2 -t ~csci570b/public/cs402/warmup2/f4.txt 
+    ./warmup2 -B 2 -t ~csci570b/public/cs402/warmup2/f5.txt -r 10 
+    ./warmup2 -t ~csci570b/public/cs402/warmup2/f6.txt -r 5 -B 2 
+    ./warmup2 -t ~csci570b/public/cs402/warmup2/f7.txt -B 1 -r 5 
+
++---------------+
+| Minus points: |
++---------------+
+
+Missing/incomplete required section(s) in README file : -20 points (even if lots of comments in code)
+
+Submitted binary file : -2 points
+
+Cannot compile      : -5 to -10, depending on effort to make it work
+                      if cannot generate executable, at least 5 points
+                          will be taken off, up to 10 points off if it
+                          takes a lot to make it work
+                      if no Makefile, deduct 10 points
+
+Compiler warnings   : -1 to -3
+                      if using gcc/g++, make sure -Wall flag is used
+                      please take 1 point off for 1-4 warnings,
+                      2 points off for 5-8 warnings, 3 points for more
+
+"make clean" : -2 points if cannot delete all binary files created during compilation
+               (.o files, .gch files, executable files, etc.)
+
+Segmentation faults : -10 points
+                if you see a seg fault (or bus error) any time during your
+                    testing of the code, if it's fairly repeatable, deduct 10
+                    points, if it's intermittent, deduct less, depending on
+                    how often you see the seg fault
+
+Separate compilation : -10 points
+                if the executable is compiled with a single line, deduct
+                    all 10 points
+                if the executable is a single module, but generates warmup2.o and
+                    then link to create the executable in line one, deduct 5
+                    points
+                if a lot of the code are in .h files, deduct all 10 points
+
+Using busy-wait : -30 points
+                       ./warmup2
+                       (if the student's program is taking up one of the top
+                           spots in CPU percentages and show high percentages,
+                           this is considered busy-wait, should take 30 points
+                           off)
+
+Handling of commandline arguments:
+        (Just to see if the commandline arguments are handled
+            properly -- meaning that they affect the program's
+            operation in the expected manner.)
+        (If the points are already lost when you test for positive points,
+            there is no need to deduct them.)
+        (For all these tests, if they can handle "-n 3",
+            please use "-n 3" so it doesn't take too long to test.
+            Otherwise, don't use "-n".)
+    1) Cannot handle -n : -2 points
+        (Please try these values: 1, 2, 3)
+    2) Cannot handle -lambda : -2 points
+        (Please try these values: 0.001, 1, 1000)
+    3) Cannot handle -mu : -2 points
+        (Please try these values: 0.001, 1, 1000)
+    4) Cannot handle -r : -2 points
+        (Please try these values: 0.001, 1, 1000)
+    5) Cannot handle -B : -2 points
+        (Please try these values: 1, 1000, 1000000)
+    6) Cannot handle -P : -2 points
+        (Please try these values with both B and r
+            having the same values: 1, 1000, 1000000)
+
+Trace output : -46 points
+    1) Each regular packet must have exactly 7 lines of trace and contain
+           correct information : -40 points
+    2) Each dropped packet must have exactly 1 line of trace and contain
+           correct information : -2 points
+    3) Each removed packet (due to <Cntrl+C>) must contain correct removal
+           information : -2 points
+    4) Each token arrival (dropped or not dropped) must have exactly 1 line
+           of trace and contain correct information : -2 points
+
+Statistics output :
+        (The statistics must match the trace.
+         If they don't match, please determine if students simply
+            add/subtract the wrong value or if they did something
+            wrong in the emulation.  Try to give partial credits.)
+    1) Wrong inter-arrival time : -3 points
+    2) Wrong service time : -3 points
+    3) Wrong number of customers in Q1 : -3 points
+    4) Wrong number of customers in Q2 : -3 points
+    5) Wrong number of customers at a server : -3 points
+    6) Wrong time in system : -3 points
+    7) Wrong standard deviation for time in system : -3 points
+    8) Wrong drop probability : -3 points
+
+Output bad format : -5 points
+    Note: all timestamps on the left MUST line up
+    Note: it's ok that the output does not look exactly like the sample in spec
+          but must contain same information as the sample in spec
+
+Output wrong precision for statistics (should be 6-8 significant digits) : -3 points
+
+Large service time test : -3 points
+    ./warmup2 -n 3 -mu 0.00001
+Large inter-arrival time test : -3 points
+    ./warmup2 -n 3 -lambda 0.00001
+Tiny inter-arrival time test : -3 points
+    ./warmup2 -n 3 -lambda 1500
+Tiny service time test : -3 points
+    ./warmup2 -n 3 -mu 1500
+Large total number of customers test : -5 points
+    (press <Cntrl+C> after 15 seconds)
+    ./warmup2 -n 2147483647
+Large total number of customers with high arrival rate test : -5 points
+    (press <Cntrl+C> after 5 seconds)
+    ./warmup2 -n 2147483647 -lambda 10000 -mu 5000
+Dropped tokens test : -3 points
+    ./warmup2 -n 10 -B 1 -mu 0.001 -lambda 0.5
+    ./warmup2 -n 10 -B 1 -mu 0.001 -lambda 0.9
+    ./warmup2 -n 10 -B 1 -mu 0.001 -lambda 1.7
+
+Cannot handle <Cntrl+C> at all (ignored or no statistics) : -5 points
+    (try <Ctrl+C> after a few packets have finished service)
+
+Can handle <Cntrl+C> but statistics way off : -2 points
+    (try <Ctrl+C> after a few packets have finished service)
+
+Not using condition variables or do some kind of busy-wait : -15 points
+
+Synchronization check : -20 points
+    (Unfortunately, you need to do visual inspection of their
+        code.  Look or grep for "mutex" and see if you can
+        find out if they are doing the right thing.  You don't
+        need to be 100% sure that they are doing the right thing.
+        As long as they seem to be doing the right thing, you can
+        give them full credit.)
+    (If semaphore is used instead of mutex, -10 points since
+        this project requires doing things the pthread way.)
+
+A common failure in this project will be deadlocks.  If a test case 
+command causes the program to go in a deadlock and freeze, you can
+take off points for that test case.  However, if the program freezes
+on a lot of test cases (more than 5), you can either contact the student
+or deduct a flat 20 points for synchronization problems.
+
+Bad commandline : -1 point each for each not handling properly
+                # need some sort of error output to indicate that the command
+                #     cannot be completed, it does not have to be exactly the
+                #     error indicated below, but it MUST BE something reasonable
+                #     to inform the user about the error condition
+                # if a commandline is malformed, MUST give "usage" information
+                #     as described in the spec
+                # please note that commandline parsing is separate from
+                #     other functionalities, so even though a student has
+                #     declared that certain part of the assignments is not
+                #     imlemented, commandling parsing still needs to be done
+                #     for those commands
+
+                ./warmup2 -x -y -z
+                    (malformed command)
+                ./warmup2 -lambda -n 10
+                    (malformed command)
+                ./warmup2 -mu -n 10
+                    (malformed command)
+                ./warmup2 -r -n 10
+                    (malformed command)
+                ./warmup2 -B -n 10
+                    (malformed command)
+                ./warmup2 -n
+                    (malformed command)
+                ./warmup2 -r 5 -mu
+                    (malformed command)
+                ./warmup2 -y sort
+                    (malformed command)
+                ./warmup2 xyz
+                    (malformed command)
+                ./warmup2 abc def ghi
+                    (malformed command)
+                ./warmup2 ksjdfjwiejofjasdfjowkejokjaosijfioejfsiejriwjeirjwier
+                    (malformed command)
+                ./warmup2 -t /usr/bin/xyzz
+                    (input file /usr/bin/xyzz does not exist)
+                ./warmup2 -t /etc/sysidcfg
+                    (input file /etc/sysidcfg cannot be opened - access denies)
+                ./warmup2 -t /etc/inet/secret/xyzz
+                    (input file /etc/inet/secret/xyzz cannot be opened - access denies)
+                ./warmup2 -t /etc
+                    (input file /etc is a directory)
+                ./warmup2 -t /etc/motd
+                    (input file is not in the right format)
+                ./warmup2 -t ~/.login
+                    (input file is not in the right format)
+

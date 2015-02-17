@@ -74,6 +74,10 @@ void* packetArrival(void *arg) {
 	while(1) {
 		usleep(1000000/lambda);
 		pthread_mutex_lock(&mutex);
+		//if(i == n) {
+		//	return (void*)0;
+		//	pthread_mutex_unlock(&mutex);
+		//}
 		i++;
 		p = createPacket(i);
 		printf("p%d arrives, needs %d tokens\n", p->packetId, p->tokenRequired);
@@ -81,7 +85,6 @@ void* packetArrival(void *arg) {
 		printf("p%d enters Q1\n", i);
 		pthread_mutex_unlock(&mutex);
 	}
-	return (void*)0;
 }
 
 void *tokenDeposit(void *arg) {
@@ -113,20 +116,22 @@ void *server1(void *arg) {
 	packet *p;
 	while(1) {
 		pthread_mutex_lock(&mutex);
-		while(!My402ListEmpty(&q2)) {
+		while(My402ListEmpty(&q2)) {
 			pthread_cond_wait(&q2NotEmpty, &mutex);
-			p = deleteFirstFromQ2();
-			printf("p%d begins service at S1, requesting %lfms of service\n", p->packetId, p->serviceTime);
-			pthread_mutex_unlock(&mutex);
-			usleep(1000000/mu);
-			pthread_mutex_lock(&mutex);
-			printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
 		}
+		p = deleteFirstFromQ2();
+		printf("p%d begins service at S1, requesting %lfms of service\n", p->packetId, p->serviceTime);
+		pthread_mutex_unlock(&mutex);
+		usleep(1000000/mu);
+		pthread_mutex_lock(&mutex);
+		printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
+		
 		pthread_mutex_unlock(&mutex);
 	}
 	return (void*)0;
 }
 
+//server2 copy server1 code
 
 void init() {
 	//initialize queue1 and queue2
@@ -140,6 +145,10 @@ void init() {
 	pthread_mutex_init(&mutex, NULL);
 	//condition varibale
 	pthread_cond_init(&q2NotEmpty, NULL);
+}
+
+void printParamter() {
+	printf("emulation begins\n");
 }
 
 void createThread() {

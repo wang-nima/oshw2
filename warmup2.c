@@ -6,14 +6,14 @@
 #include "my402list.h"
 
 //global variable
+//default value
 int lambda = 1;		//packet arriving rate (lambda packets per second)
 double mu = 0.35;	//server can serve mu packets per second
 double r = 1.5;		//r tokens arrive at the bucket per second
 int B = 10;			//token bucket depth
 int P = 3;			//default token required
-int num = 20;		//total number of packets to arrive
+int num = 5;		//total number of packets to arrive
 
-int n = 4;
 
 pthread_mutex_t mutex;
 pthread_cond_t q2NotEmpty;
@@ -74,10 +74,10 @@ void* packetArrival(void *arg) {
 	while(1) {
 		usleep(1000000/lambda);
 		pthread_mutex_lock(&mutex);
-		//if(i == n) {
-		//	return (void*)0;
-		//	pthread_mutex_unlock(&mutex);
-		//}
+		if(i == num) {
+			pthread_mutex_unlock(&mutex);
+			return (void*)0;
+		}
 		i++;
 		p = createPacket(i);
 		printf("p%d arrives, needs %d tokens\n", p->packetId, p->tokenRequired);
@@ -92,10 +92,13 @@ void *tokenDeposit(void *arg) {
 	while(1) {
 		usleep(1000000/r);
 		pthread_mutex_lock(&mutex);
-		tokenBucket++;
 		i++;
-		printf("token t%d arrives, token bucket now has %d token\n", i, tokenBucket);
-		tokenBucket = min(tokenBucket, B);
+		if(tokenBucket < B) {
+			tokenBucket++;
+			printf("token t%d arrives, token bucket now has %d token\n", i, tokenBucket);
+		} else {
+			printf("token t%d arrives, dropped\n", i);
+		}
 		if(!My402ListEmpty(&q1)) {
 			move();
 		}
@@ -125,7 +128,6 @@ void *server1(void *arg) {
 		usleep(1000000/mu);
 		pthread_mutex_lock(&mutex);
 		printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
-		
 		pthread_mutex_unlock(&mutex);
 	}
 	return (void*)0;
@@ -149,6 +151,14 @@ void init() {
 
 void printParamter() {
 	printf("emulation begins\n");
+	printf("Emulation Parameters:\n");
+	printf("    number to arrive = %d\n", num);
+	printf("    lambda = %d\n", lambda);
+	printf("    mu = %lf\n", mu);
+	printf("    r = %lf\n", r);
+	printf("    B = %d\n", B);
+	printf("    P = %d\n", P);
+	printf("\n");
 }
 
 void createThread() {
@@ -161,6 +171,7 @@ void createThread() {
 int main(int argc, char **argv) {
 	//setParameter(argc, argv);
 	init();
+	printParamter();
 	createThread();
 	while(1) {}
 	return 0;

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "my402list.h"
 
 //global variable
@@ -12,7 +13,7 @@ double mu = 0.35;	//server can serve mu packets per second
 double r = 1.5;		//r tokens arrive at the bucket per second
 int B = 10;			//token bucket depth
 int P = 3;			//default token required
-int num = 5;		//total number of packets to arrive
+int num = 20;		//total number of packets to arrive
 
 
 pthread_mutex_t mutex;
@@ -134,6 +135,24 @@ void *server1(void *arg) {
 }
 
 //server2 copy server1 code
+void *server2(void *arg) {
+	packet *p;
+	while(1) {
+		pthread_mutex_lock(&mutex);
+		while(My402ListEmpty(&q2)) {
+			pthread_cond_wait(&q2NotEmpty, &mutex);
+		}
+		p = deleteFirstFromQ2();
+		printf("p%d begins service at S2, requesting %lfms of service\n", p->packetId, p->serviceTime);
+		pthread_mutex_unlock(&mutex);
+		usleep(1000000/mu);
+		pthread_mutex_lock(&mutex);
+		printf("p%d departs from S2, service time = ms, time in system = ms\n", p->packetId);
+		pthread_mutex_unlock(&mutex);
+	}
+	return (void*)0;
+}
+
 
 void init() {
 	//initialize queue1 and queue2
@@ -165,7 +184,7 @@ void createThread() {
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
 	pthread_create(&pat, NULL, packetArrival, (void*)0);
 	pthread_create(&s1, NULL, server1, (void*)0);
-	//pthread_create(&s2, NULL, server2, (void*)0);
+	pthread_create(&s2, NULL, server2, (void*)0);
 }
 
 int main(int argc, char **argv) {

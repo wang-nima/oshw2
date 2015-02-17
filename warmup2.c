@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "My402List.h"
+#include "my402list.h"
 
 //global variable
 int lambda = 1;		//packet arriving rate (lambda packets per second)
@@ -16,13 +16,13 @@ int num = 20;		//total number of packets to arrive
 int n = 4;
 
 pthread_mutex_t mutex;
-pthread_cond_t emptyQ2;
+pthread_cond_t q2NotEmpty;
 
 My402List q1, q2;
 
 int tokenBucket;
 
-pthread_t tdt, pat;
+pthread_t tdt, pat, s1, s2;
 
 
 
@@ -61,8 +61,9 @@ void move() {
 		My402ListAppend(&q2, firstPacket);
 		My402ListUnlink(&q1, firstElem);
 		printf("p%d leaves Q1, time in Q1 = ms, token bucket now has %d token\n", firstPacket->packetId, tokenBucket);
-		if(My402ListEmpty(&q2)) {
-			pthread_cond_signal(&emptyQ2);
+		printf("p%d enters Q2\n", firstPacket->packetId);
+		if(!My402ListEmpty(&q2)) {
+			pthread_cond_broadcast(&q2NotEmpty);
 		}
 	}
 }
@@ -72,8 +73,8 @@ void* packetArrival(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
-		pthread_mutex_lock(&mutex);
 		usleep(1000000/lambda);
+		pthread_mutex_lock(&mutex);
 		i++;
 		p = createPacket(i);
 		printf("p%d arrives, needs %d tokens\n", p->packetId, p->tokenRequired);
@@ -87,21 +88,57 @@ void* packetArrival(void *arg) {
 void *tokenDeposit(void *arg) {
 	int i = 0;
 	while(1) {
-		pthread_mutex_lock(&mutex);
 		usleep(1000000/r);
+		pthread_mutex_lock(&mutex);
 		tokenBucket++;
 		i++;
+		printf("token t%d arrives, token bucket now has %d token\n", i, tokenBucket);
 		tokenBucket = min(tokenBucket, B);
 		if(!My402ListEmpty(&q1)) {
 			move();
 		}
 		pthread_mutex_unlock(&mutex);
-		printf("token t%d arrives, token bucket now has %d token\n", i, tokenBucket);
 	}
 	return (void*)0;
 }
 
-void *server(void *arg) {
+packet *deleteFirstFromQ2() {
+	My402ListElem *firstElem = My402ListFirst(&q2);
+	packet *firstPacket = (packet*)firstElem->obj;
+	My402ListUnlink(&q2, firstElem);
+	printf("p%d leaves Q2, time in Q2 = ms\n", firstPacket->packetId);
+	return firstPacket;
+}
+
+void *server1(void *arg) {
+	packet *p;
+	while(1) {
+		usleep(1000000/mu);
+		pthread_mutex_lock(&mutex);
+		while(My402ListEmpty(&q2)) {
+			pthread_cond_wait(&q2NotEmpty, &mutex);
+			p = deleteFirstFromQ2();
+			printf("p%d begins service at S1, requesting %dms of service\n", p->packetId, p->serviceTime);
+			printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
+		}
+		pthread_mutex_unlock(&mutex);
+	}
+	return (void*)0;
+}
+
+void *server2(void *arg) {
+	packet *p;
+	while(1) {
+		usleep(1000000/mu);
+		pthread_mutex_lock(&mutex);
+		while(My402ListEmpty(&q2)) {
+			pthread_cond_wait(&q2NotEmpty, &mutex);
+			p = deleteFirstFromQ2();
+			printf("p%d begins service at S2, requesting %dms of service\n", p->packetId, p->serviceTime);
+			printf("p%d departs from S2, service time = ms, time in system = ms\n", p->packetId);
+		}
+		pthread_mutex_unlock(&mutex);
+	}
 	return (void*)0;
 }
 
@@ -109,26 +146,25 @@ void init() {
 	//initialize queue1 and queue2
 	memset(&q1, 0, sizeof(My402List));
 	memset(&q2, 0, sizeof(My402List));
-	(void)My402ListInit(&q1);
-	(void)My402ListInit(&q2);
+	My402ListInit(&q1);
+	My402ListInit(&q2);
 	//initialize tokenBucket
 	tokenBucket = 0;
 	//mutex
 	pthread_mutex_init(&mutex, NULL);
 	//condition varibale
-	pthread_cond_init(&emptyQ2, NULL);
-	//q1 and q2
-	My402ListInit(&q1);
-	My402ListInit(&q2);
+	pthread_cond_init(&q2NotEmpty, NULL);
 }
 
 void createThread() {
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
 	pthread_create(&pat, NULL, packetArrival, (void*)0);
+	pthread_create(&s1, NULL, server1, (void*)0);
+	pthread_create(&s2, NULL, server2, (void*)0);
 }
 
 int main(int argc, char **argv) {
-	setParameter(argc, argv);
+	//setParameter(argc, argv);
 	init();
 	createThread();
 	while(1) {}

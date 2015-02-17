@@ -28,7 +28,7 @@ pthread_t tdt, pat, s1, s2;
 
 typedef struct packet {
 	int packetId;
-	int serviceTime;
+	double serviceTime;
 	int tokenRequired;
 	int arrivalTime;
 	int departureTime;
@@ -48,7 +48,7 @@ void setParameter(int argc, char **argv) {
 packet* createPacket(int id) {
 	packet *ret = (packet*)malloc(sizeof(packet));
 	ret->packetId = id;
-	ret->serviceTime = 1000000/mu;
+	ret->serviceTime = (double)(1/mu*1000);
 	ret->tokenRequired = P;
 	return ret;
 }
@@ -67,7 +67,6 @@ void move() {
 		}
 	}
 }
-
 
 void* packetArrival(void *arg) {
 	packet *p;
@@ -113,12 +112,14 @@ packet *deleteFirstFromQ2() {
 void *server1(void *arg) {
 	packet *p;
 	while(1) {
-		usleep(1000000/mu);
 		pthread_mutex_lock(&mutex);
-		while(My402ListEmpty(&q2)) {
+		while(!My402ListEmpty(&q2)) {
 			pthread_cond_wait(&q2NotEmpty, &mutex);
 			p = deleteFirstFromQ2();
-			printf("p%d begins service at S1, requesting %dms of service\n", p->packetId, p->serviceTime);
+			printf("p%d begins service at S1, requesting %lfms of service\n", p->packetId, p->serviceTime);
+			pthread_mutex_unlock(&mutex);
+			usleep(1000000/mu);
+			pthread_mutex_lock(&mutex);
 			printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
 		}
 		pthread_mutex_unlock(&mutex);
@@ -126,21 +127,6 @@ void *server1(void *arg) {
 	return (void*)0;
 }
 
-void *server2(void *arg) {
-	packet *p;
-	while(1) {
-		usleep(1000000/mu);
-		pthread_mutex_lock(&mutex);
-		while(My402ListEmpty(&q2)) {
-			pthread_cond_wait(&q2NotEmpty, &mutex);
-			p = deleteFirstFromQ2();
-			printf("p%d begins service at S2, requesting %dms of service\n", p->packetId, p->serviceTime);
-			printf("p%d departs from S2, service time = ms, time in system = ms\n", p->packetId);
-		}
-		pthread_mutex_unlock(&mutex);
-	}
-	return (void*)0;
-}
 
 void init() {
 	//initialize queue1 and queue2
@@ -160,7 +146,7 @@ void createThread() {
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
 	pthread_create(&pat, NULL, packetArrival, (void*)0);
 	pthread_create(&s1, NULL, server1, (void*)0);
-	pthread_create(&s2, NULL, server2, (void*)0);
+	//pthread_create(&s2, NULL, server2, (void*)0);
 }
 
 int main(int argc, char **argv) {

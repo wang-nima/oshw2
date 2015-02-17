@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 #include "my402list.h"
 
@@ -25,6 +26,8 @@ int tokenBucket;
 
 pthread_t tdt, pat, s1, s2;
 
+//clock_t start;
+struct timeval start;
 
 
 typedef struct packet {
@@ -38,12 +41,19 @@ typedef struct packet {
 }packet;
 
 void setParameter(int argc, char **argv) {
-	int c;
-	while((c = getopt(argc, argv, "lambda:mu:r:P:n:t:")) != -1) {
-		switch(c) {
 
-		}
-	} 
+}
+
+void printTime() {
+	struct timeval t;
+	//pthread_mutex_lock(&mutex);
+	gettimeofday(&t, NULL);
+	long time = (t.tv_sec * 1000000 + t.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+	long ms, us;
+	ms = time / 1000;
+	us = time % 1000;
+	printf("%08ld.%03ldms :", ms, us);
+	//pthread_mutex_unlock(&mutex);
 }
 
 packet* createPacket(int id) {
@@ -61,7 +71,9 @@ void move() {
 		tokenBucket -= firstPacket->tokenRequired;
 		My402ListAppend(&q2, firstPacket);
 		My402ListUnlink(&q1, firstElem);
+		printTime();
 		printf("p%d leaves Q1, time in Q1 = ms, token bucket now has %d token\n", firstPacket->packetId, tokenBucket);
+		printTime();
 		printf("p%d enters Q2\n", firstPacket->packetId);
 		if(!My402ListEmpty(&q2)) {
 			pthread_cond_broadcast(&q2NotEmpty);
@@ -81,8 +93,10 @@ void* packetArrival(void *arg) {
 		}
 		i++;
 		p = createPacket(i);
+		printTime();
 		printf("p%d arrives, needs %d tokens\n", p->packetId, p->tokenRequired);
 		My402ListAppend(&q1,p);
+		printTime();
 		printf("p%d enters Q1\n", i);
 		pthread_mutex_unlock(&mutex);
 	}
@@ -96,8 +110,10 @@ void *tokenDeposit(void *arg) {
 		i++;
 		if(tokenBucket < B) {
 			tokenBucket++;
+			printTime();
 			printf("token t%d arrives, token bucket now has %d token\n", i, tokenBucket);
 		} else {
+			printTime();
 			printf("token t%d arrives, dropped\n", i);
 		}
 		if(!My402ListEmpty(&q1)) {
@@ -112,6 +128,7 @@ packet *deleteFirstFromQ2() {
 	My402ListElem *firstElem = My402ListFirst(&q2);
 	packet *firstPacket = (packet*)firstElem->obj;
 	My402ListUnlink(&q2, firstElem);
+	printTime();
 	printf("p%d leaves Q2, time in Q2 = ms\n", firstPacket->packetId);
 	return firstPacket;
 }
@@ -124,10 +141,12 @@ void *server1(void *arg) {
 			pthread_cond_wait(&q2NotEmpty, &mutex);
 		}
 		p = deleteFirstFromQ2();
+		printTime();
 		printf("p%d begins service at S1, requesting %lfms of service\n", p->packetId, p->serviceTime);
 		pthread_mutex_unlock(&mutex);
 		usleep(1000000/mu);
 		pthread_mutex_lock(&mutex);
+		printTime();
 		printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
 		pthread_mutex_unlock(&mutex);
 	}
@@ -143,10 +162,12 @@ void *server2(void *arg) {
 			pthread_cond_wait(&q2NotEmpty, &mutex);
 		}
 		p = deleteFirstFromQ2();
+		printTime();
 		printf("p%d begins service at S2, requesting %lfms of service\n", p->packetId, p->serviceTime);
 		pthread_mutex_unlock(&mutex);
 		usleep(1000000/mu);
 		pthread_mutex_lock(&mutex);
+		printTime();
 		printf("p%d departs from S2, service time = ms, time in system = ms\n", p->packetId);
 		pthread_mutex_unlock(&mutex);
 	}
@@ -168,8 +189,8 @@ void init() {
 	pthread_cond_init(&q2NotEmpty, NULL);
 }
 
+
 void printParamter() {
-	printf("emulation begins\n");
 	printf("Emulation Parameters:\n");
 	printf("    number to arrive = %d\n", num);
 	printf("    lambda = %d\n", lambda);
@@ -180,17 +201,25 @@ void printParamter() {
 	printf("\n");
 }
 
+
 void createThread() {
+	printTime();
+	printf("emulation begins\n");
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
 	pthread_create(&pat, NULL, packetArrival, (void*)0);
 	pthread_create(&s1, NULL, server1, (void*)0);
 	pthread_create(&s2, NULL, server2, (void*)0);
 }
 
+void setClock() {
+	gettimeofday(&start, NULL);
+}
+
 int main(int argc, char **argv) {
 	//setParameter(argc, argv);
 	init();
 	printParamter();
+	setClock();
 	createThread();
 	while(1) {}
 	return 0;

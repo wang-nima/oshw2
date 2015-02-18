@@ -41,7 +41,31 @@ typedef struct packet {
 }packet;
 
 void setParameter(int argc, char **argv) {
-
+	int i;
+	for(i = 1; i < argc; i += 2) {
+		if(argv[i][0] == '-') {
+			if(strcmp(argv[i] + 1, "lambda") == 0) {
+				lambda = atoi(argv[i+1]);
+			} else if(strcmp(argv[i] + 1, "mu") == 0) {
+				mu = atoi(argv[i+1]);
+			} else if(strcmp(argv[i] + 1, "r") == 0) {
+				r = atoi(argv[i+1]);
+			} else if(strcmp(argv[i] + 1, "B") == 0) {
+				B = atoi(argv[i+1]);
+			} else if(strcmp(argv[i] + 1, "P") == 0) {
+				P = atoi(argv[i+1]);
+			} else if(strcmp(argv[i] + 1, "n") == 0) {
+				num = atoi(argv[i+1]);
+			} else if(strcmp(argv[i] + 1, "t") == 0) {
+				//do something to read from file
+			} else {
+				printf("invalid option\n");
+			}
+		} else {
+			printf("no parameter entered for the option\n");
+			return;
+		}
+	}
 }
 
 void printTime() {
@@ -216,7 +240,7 @@ void setClock() {
 }
 
 int main(int argc, char **argv) {
-	//setParameter(argc, argv);
+	setParameter(argc, argv);
 	init();
 	printParamter();
 	setClock();

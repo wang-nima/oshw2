@@ -13,9 +13,9 @@
 double lambda = 1;		//packet arriving rate (lambda packets per second)
 double mu = 0.35;	//server can serve mu packets per second
 double r = 1.5;		//r tokens arrive at the bucket per second
-int B = 10;			//token bucket depth
-int P = 3;			//default token required
-int num = 20;		//total number of packets to arrive
+unsigned int B = 10;			//token bucket depth
+unsigned int P = 3;			//default token required
+unsigned int num = 20;		//total number of packets to arrive
 
 pthread_mutex_t mutex;
 pthread_cond_t q2NotEmpty;
@@ -27,6 +27,10 @@ int tokenBucket;
 pthread_t tdt, pat, s1, s2;
 
 struct timeval start;
+
+FILE *fp;
+
+int traceDrivenMode = 0;
 
 unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 
@@ -61,6 +65,8 @@ void setParameter(int argc, char **argv) {
 				num = atoi(argv[i+1]);
 			} else if(strcmp(argv[i] + 1, "t") == 0) {
 				//read from file
+				fp = fopen(argv[i] + 1,"r");
+				traceDrivenMode = 1;
 			} else {
 				printf("invalid option\n");
 			}
@@ -119,11 +125,19 @@ void move() {
 	}
 }
 
+void sleepWithinTenSecond(unsigned long x) {
+	if(x > 10000000) {
+		usleep(10000000);
+	} else {
+		usleep(x);
+	}
+}
+
 void* packetArrival(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
-		usleep(1000000/lambda);
+		sleepWithinTenSecond(1000000/lambda);
 		pthread_mutex_lock(&mutex);
 		if(i == num) {
 			pthread_mutex_unlock(&mutex);
@@ -186,7 +200,7 @@ void *server1(void *arg) {
 		printTime();
 		printf("p%d begins service at S1, requesting %d.%dms of service\n", p->packetId, p->serviceTime / 1000, p->serviceTime % 1000);
 		pthread_mutex_unlock(&mutex);
-		usleep(1000000/mu);
+		sleepWithinTenSecond(1000000 / mu);
 		pthread_mutex_lock(&mutex);
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
@@ -215,7 +229,7 @@ void *server2(void *arg) {
 		printTime();
 		printf("p%d begins service at S2, requesting %d.%dms of service\n", p->packetId, p->serviceTime / 1000, p->serviceTime % 1000);
 		pthread_mutex_unlock(&mutex);
-		usleep(1000000/mu);
+		sleepWithinTenSecond(1000000 / mu);
 		pthread_mutex_lock(&mutex);
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
@@ -244,6 +258,10 @@ void init() {
 	pthread_mutex_init(&mutex, NULL);
 	//condition varibale
 	pthread_cond_init(&q2NotEmpty, NULL);
+
+	if(traceDrivenMode) {
+		fscanf(fp,"%d",&num);
+	}
 }
 
 

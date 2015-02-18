@@ -10,7 +10,7 @@
 
 //global variable
 //default value
-int lambda = 1;		//packet arriving rate (lambda packets per second)
+double lambda = 1;		//packet arriving rate (lambda packets per second)
 double mu = 0.35;	//server can serve mu packets per second
 double r = 1.5;		//r tokens arrive at the bucket per second
 int B = 10;			//token bucket depth
@@ -48,11 +48,11 @@ void setParameter(int argc, char **argv) {
 	for(i = 1; i < argc; i += 2) {
 		if(argv[i][0] == '-') {
 			if(strcmp(argv[i] + 1, "lambda") == 0) {
-				lambda = atoi(argv[i+1]);
+				lambda = atof(argv[i+1]);
 			} else if(strcmp(argv[i] + 1, "mu") == 0) {
-				mu = atoi(argv[i+1]);
+				mu = atof(argv[i+1]);
 			} else if(strcmp(argv[i] + 1, "r") == 0) {
-				r = atoi(argv[i+1]);
+				r = atof(argv[i+1]);
 			} else if(strcmp(argv[i] + 1, "B") == 0) {
 				B = atoi(argv[i+1]);
 			} else if(strcmp(argv[i] + 1, "P") == 0) {
@@ -250,7 +250,7 @@ void init() {
 void printParamter() {
 	printf("Emulation Parameters:\n");
 	printf("    number to arrive = %d\n", num);
-	printf("    lambda = %d\n", lambda);
+	printf("    lambda = %lf\n", lambda);
 	printf("    mu = %lf\n", mu);
 	printf("    r = %lf\n", r);
 	printf("    B = %d\n", B);

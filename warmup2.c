@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+#include <math.h>
 #include "my402list.h"
 
 //global variable
@@ -16,7 +17,6 @@ int B = 10;			//token bucket depth
 int P = 3;			//default token required
 int num = 20;		//total number of packets to arrive
 
-
 pthread_mutex_t mutex;
 pthread_cond_t q2NotEmpty;
 
@@ -26,18 +26,21 @@ int tokenBucket;
 
 pthread_t tdt, pat, s1, s2;
 
-//clock_t start;
 struct timeval start;
 
+unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 
 typedef struct packet {
-	int packetId;
-	double serviceTime;
-	int tokenRequired;
-	int arrivalTime;
-	int departureTime;
-	int responseTime;
-	int waitingTime;
+	unsigned int packetId;
+	unsigned int serviceTime;			//in micro second
+	unsigned int tokenRequired;
+
+	unsigned long arrivalQ1;			//time stamps
+	unsigned long arrivalQ2;
+	unsigned long beginService;
+	unsigned long departureTime;
+
+	unsigned int interArrivalTime;		//in micro second
 }packet;
 
 void setParameter(int argc, char **argv) {
@@ -57,7 +60,7 @@ void setParameter(int argc, char **argv) {
 			} else if(strcmp(argv[i] + 1, "n") == 0) {
 				num = atoi(argv[i+1]);
 			} else if(strcmp(argv[i] + 1, "t") == 0) {
-				//do something to read from file
+				//read from file
 			} else {
 				printf("invalid option\n");
 			}
@@ -68,23 +71,30 @@ void setParameter(int argc, char **argv) {
 	}
 }
 
-void printTime() {
+unsigned long currentTimeToMicroSecond() {
+	unsigned long ret;
 	struct timeval t;
-	//pthread_mutex_lock(&mutex);
 	gettimeofday(&t, NULL);
-	long time = (t.tv_sec * 1000000 + t.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+	ret = (t.tv_sec * 1000000 + t.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+	return ret;
+}
+
+void printTime() {
+	long time = currentTimeToMicroSecond();
 	long ms, us;
 	ms = time / 1000;
 	us = time % 1000;
 	printf("%08ld.%03ldms :", ms, us);
-	//pthread_mutex_unlock(&mutex);
 }
 
 packet* createPacket(int id) {
 	packet *ret = (packet*)malloc(sizeof(packet));
 	ret->packetId = id;
-	ret->serviceTime = (double)(1/mu*1000);
+	ret->serviceTime = 1000000 / mu;
 	ret->tokenRequired = P;
+	ret->arrivalQ1 = currentTimeToMicroSecond();
+	ret->interArrivalTime = ret->arrivalQ1 - lastPacketArrivalTimeInMicroSecond;
+	lastPacketArrivalTimeInMicroSecond = ret->arrivalQ1;
 	return ret;
 }
 
@@ -96,7 +106,11 @@ void move() {
 		My402ListAppend(&q2, firstPacket);
 		My402ListUnlink(&q1, firstElem);
 		printTime();
-		printf("p%d leaves Q1, time in Q1 = ms, token bucket now has %d token\n", firstPacket->packetId, tokenBucket);
+		firstPacket->arrivalQ2 = currentTimeToMicroSecond();
+		int interval = firstPacket->arrivalQ2 - firstPacket->arrivalQ1;
+		int x = interval / 1000;
+		int y = interval % 1000;
+		printf("p%d leaves Q1, time in Q1 = %d.%dms, token bucket now has %d token\n", firstPacket->packetId, x, y, tokenBucket);
 		printTime();
 		printf("p%d enters Q2\n", firstPacket->packetId);
 		if(!My402ListEmpty(&q2)) {
@@ -118,7 +132,7 @@ void* packetArrival(void *arg) {
 		i++;
 		p = createPacket(i);
 		printTime();
-		printf("p%d arrives, needs %d tokens\n", p->packetId, p->tokenRequired);
+		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n", p->packetId, p->tokenRequired, p->interArrivalTime/1000, p->interArrivalTime%1000);
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);
@@ -151,9 +165,13 @@ void *tokenDeposit(void *arg) {
 packet *deleteFirstFromQ2() {
 	My402ListElem *firstElem = My402ListFirst(&q2);
 	packet *firstPacket = (packet*)firstElem->obj;
+	firstPacket->beginService = currentTimeToMicroSecond();
 	My402ListUnlink(&q2, firstElem);
 	printTime();
-	printf("p%d leaves Q2, time in Q2 = ms\n", firstPacket->packetId);
+	int interval = firstPacket->beginService - firstPacket->arrivalQ2;
+	int x = interval / 1000;
+	int y = interval % 1000;
+	printf("p%d leaves Q2, time in Q2 = %d.%dms\n", firstPacket->packetId, x, y);
 	return firstPacket;
 }
 
@@ -166,16 +184,24 @@ void *server1(void *arg) {
 		}
 		p = deleteFirstFromQ2();
 		printTime();
-		printf("p%d begins service at S1, requesting %lfms of service\n", p->packetId, p->serviceTime);
+		printf("p%d begins service at S1, requesting %d.%dms of service\n", p->packetId, p->serviceTime / 1000, p->serviceTime % 1000);
 		pthread_mutex_unlock(&mutex);
 		usleep(1000000/mu);
 		pthread_mutex_lock(&mutex);
 		printTime();
-		printf("p%d departs from S1, service time = ms, time in system = ms\n", p->packetId);
+		p->departureTime = currentTimeToMicroSecond();
+		int interval = p->departureTime- p->beginService;
+		int x = interval / 1000;
+		int y = interval % 1000;
+		int intervalTotal = p->departureTime - p->arrivalQ1;
+		int a = intervalTotal / 1000;
+		int b = intervalTotal % 1000;
+		printf("p%d departs from S1, service time = %d.%dms, time in system = %d.%dms\n", p->packetId, x, y, a ,b);
 		pthread_mutex_unlock(&mutex);
 	}
 	return (void*)0;
 }
+
 
 //server2 copy server1 code
 void *server2(void *arg) {
@@ -187,12 +213,19 @@ void *server2(void *arg) {
 		}
 		p = deleteFirstFromQ2();
 		printTime();
-		printf("p%d begins service at S2, requesting %lfms of service\n", p->packetId, p->serviceTime);
+		printf("p%d begins service at S2, requesting %d.%dms of service\n", p->packetId, p->serviceTime / 1000, p->serviceTime % 1000);
 		pthread_mutex_unlock(&mutex);
 		usleep(1000000/mu);
 		pthread_mutex_lock(&mutex);
 		printTime();
-		printf("p%d departs from S2, service time = ms, time in system = ms\n", p->packetId);
+		p->departureTime = currentTimeToMicroSecond();
+		int interval = p->departureTime- p->beginService;
+		int x = interval / 1000;
+		int y = interval % 1000;
+		int intervalTotal = p->departureTime - p->arrivalQ1;
+		int a = intervalTotal / 1000;
+		int b = intervalTotal % 1000;
+		printf("p%d departs from S2, service time = %d.%dms, time in system = %d.%dms\n", p->packetId, x, y, a ,b);
 		pthread_mutex_unlock(&mutex);
 	}
 	return (void*)0;

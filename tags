@@ -73,8 +73,8 @@ packet	warmup2.c	/^typedef struct packet {$/;"	s	file:
 packet	warmup2.c	/^}packet;$/;"	t	typeref:struct:packet	file:
 packetArrival	warmup2.c	/^void* packetArrival(void *arg) {$/;"	f
 packetArrivalTraceDriven	warmup2.c	/^void* packetArrivalTraceDriven(void *arg) {$/;"	f
-packetArrivedQ1	warmup2.c	/^int packetArrivedQ1 = 0;$/;"	v
 packetId	warmup2.c	/^	unsigned int packetId;$/;"	m	struct:packet	file:
+packetProcessed	warmup2.c	/^int packetProcessed = 0;$/;"	v
 pat	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 pat_td	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 prev	my402list.h	/^    struct tagMy402ListElem *prev;$/;"	m	struct:tagMy402ListElem	typeref:struct:tagMy402ListElem::tagMy402ListElem

@@ -36,7 +36,7 @@ int traceDrivenMode = 0;
 
 unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 
-int packetArrivedQ1 = 0;
+int packetProcessed = 0;
 
 typedef struct packet {
 	unsigned int packetId;
@@ -50,8 +50,6 @@ typedef struct packet {
 
 	unsigned int interArrivalTime;		//in micro second
 }packet;
-
-
 
 void setParameter(int argc, char **argv) {
 	int i;
@@ -76,6 +74,7 @@ void setParameter(int argc, char **argv) {
 				traceDrivenMode = 1;
 			} else {
 				printf("invalid option\n");
+				return;
 			}
 		} else {
 			printf("no parameter entered for the option\n");
@@ -156,13 +155,15 @@ void* packetArrival(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
-		if(i == num) {
-			return (void*)0;
-		}
 		sleepWithinTenSecond(1000000/lambda);
 		pthread_mutex_lock(&mutex);
+		if(i == num) {
+			//pthread_exit(0);
+			return (void*) 0;
+		}
 		i++;
 		p = createPacket(i);
+		packetProcessed++;
 		printTime();
 		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n",
 				p->packetId, p->tokenRequired, 
@@ -179,10 +180,13 @@ void* packetArrivalTraceDriven(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
+		pthread_mutex_lock(&mutex);
 		if(i == num) {
-			return (void*)0;
+			return (void *)0;
 		}
 		i++;
+		packetProcessed++;
+		pthread_mutex_unlock(&mutex);
 		p = createPacketByTraceFile(i);
 		usleep(p->interArrivalTime * 1000);
 		p->arrivalQ1 = currentTimeToMicroSecond();
@@ -191,14 +195,15 @@ void* packetArrivalTraceDriven(void *arg) {
 		if(p->tokenRequired > B) {
 			printTime();
 			printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms, dropped\n",
-					i, p->tokenRequired, p->interArrivalTime / 1000, p->interArrivalTime % 1000);
+					i, p->tokenRequired, p->interArrivalTime / 1000, 
+					p->interArrivalTime % 1000);
 			continue;
 		}
-
 		pthread_mutex_lock(&mutex);
 		printTime();
 		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n",
-				p->packetId, p->tokenRequired, p->interArrivalTime/1000, p->interArrivalTime%1000);
+				p->packetId, p->tokenRequired,
+				p->interArrivalTime/1000, p->interArrivalTime%1000);
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);
@@ -212,6 +217,10 @@ void *tokenDeposit(void *arg) {
 	while(1) {
 		usleep(1000000/r);
 		pthread_mutex_lock(&mutex);
+		//if(My402ListEmpty(&q1) && packetProcessed == num) {
+		//	pthread_exit(0);
+		//	break;
+		//}
 		i++;
 		if(tokenBucket < B) {
 			tokenBucket++;

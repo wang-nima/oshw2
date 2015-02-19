@@ -1,0 +1,103 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Anchor_Ptr	my402list.c	/^#define Anchor_Ptr /;"	d	file:
+Append	my402list.h	/^    int  (*Append)(struct tagMy402List *, void*);$/;"	m	struct:tagMy402List
+B	warmup2.c	/^unsigned int B = 10;			\/\/token bucket depth$/;"	v
+DIR_SEP	cs402.h	/^#define DIR_SEP /;"	d
+Empty	my402list.h	/^    int  (*Empty)(struct tagMy402List *);$/;"	m	struct:tagMy402List
+FALSE	cs402.h	/^#define FALSE /;"	d
+Find	my402list.h	/^    My402ListElem *(*Find)(struct tagMy402List *, void *obj);$/;"	m	struct:tagMy402List
+First	my402list.h	/^    My402ListElem *(*First)(struct tagMy402List *);$/;"	m	struct:tagMy402List
+InsertAfter	my402list.h	/^    int  (*InsertAfter)(struct tagMy402List *, void*, My402ListElem*);$/;"	m	struct:tagMy402List
+InsertBefore	my402list.h	/^    int  (*InsertBefore)(struct tagMy402List *, void*, My402ListElem*);$/;"	m	struct:tagMy402List
+Last	my402list.h	/^    My402ListElem *(*Last)(struct tagMy402List *);$/;"	m	struct:tagMy402List
+Length	my402list.h	/^    int  (*Length)(struct tagMy402List *);$/;"	m	struct:tagMy402List
+MAXPATHLENGTH	cs402.h	/^#define MAXPATHLENGTH /;"	d
+My402List	my402list.h	/^} My402List;$/;"	t	typeref:struct:tagMy402List
+My402ListAppend	my402list.c	/^int  My402ListAppend(My402List* l, void* object)$/;"	f
+My402ListElem	my402list.h	/^} My402ListElem;$/;"	t	typeref:struct:tagMy402ListElem
+My402ListEmpty	my402list.c	/^int  My402ListEmpty(My402List* l)$/;"	f
+My402ListFind	my402list.c	/^My402ListElem *My402ListFind(My402List* l, void* object)$/;"	f
+My402ListFirst	my402list.c	/^My402ListElem *My402ListFirst(My402List* l)$/;"	f
+My402ListInit	my402list.c	/^int My402ListInit(My402List* l)$/;"	f
+My402ListInsertAfter	my402list.c	/^int  My402ListInsertAfter(My402List* l, void* object, My402ListElem* elme)$/;"	f
+My402ListInsertBefore	my402list.c	/^int  My402ListInsertBefore(My402List* l, void* object, My402ListElem* elem)$/;"	f
+My402ListLast	my402list.c	/^My402ListElem *My402ListLast(My402List* l)$/;"	f
+My402ListLength	my402list.c	/^int  My402ListLength(My402List* l)$/;"	f
+My402ListNext	my402list.c	/^My402ListElem *My402ListNext(My402List* l, My402ListElem* elem)$/;"	f
+My402ListPrepend	my402list.c	/^int  My402ListPrepend(My402List* l, void* object)$/;"	f
+My402ListPrev	my402list.c	/^My402ListElem *My402ListPrev(My402List* l, My402ListElem* elem)$/;"	f
+My402ListUnlink	my402list.c	/^void My402ListUnlink(My402List* l, My402ListElem* elem)$/;"	f
+My402ListUnlinkAll	my402list.c	/^void My402ListUnlinkAll(My402List* l)$/;"	f
+NULL	cs402.h	/^#define NULL /;"	d
+Next	my402list.h	/^    My402ListElem *(*Next)(struct tagMy402List *, My402ListElem *cur);$/;"	m	struct:tagMy402List
+P	warmup2.c	/^unsigned int P = 3;			\/\/default token required$/;"	v
+Prepend	my402list.h	/^    int  (*Prepend)(struct tagMy402List *, void*);$/;"	m	struct:tagMy402List
+Prev	my402list.h	/^    My402ListElem *(*Prev)(struct tagMy402List *, My402ListElem *cur);$/;"	m	struct:tagMy402List
+TRUE	cs402.h	/^#define TRUE /;"	d
+Unlink	my402list.h	/^    void (*Unlink)(struct tagMy402List *, My402ListElem*);$/;"	m	struct:tagMy402List
+UnlinkAll	my402list.h	/^    void (*UnlinkAll)(struct tagMy402List *);$/;"	m	struct:tagMy402List
+_CS402_H_	cs402.h	/^#define _CS402_H_$/;"	d
+_MY402LIST_H_	my402list.h	/^#define _MY402LIST_H_$/;"	d
+anchor	my402list.h	/^    My402ListElem anchor;$/;"	m	struct:tagMy402List
+arrivalQ1	warmup2.c	/^	unsigned long arrivalQ1;			\/\/time stamps$/;"	m	struct:packet	file:
+arrivalQ2	warmup2.c	/^	unsigned long arrivalQ2;$/;"	m	struct:packet	file:
+beginService	warmup2.c	/^	unsigned long beginService;$/;"	m	struct:packet	file:
+createPacket	warmup2.c	/^packet* createPacket(int id) {$/;"	f
+createPacketByTraceFile	warmup2.c	/^packet* createPacketByTraceFile(int id) {$/;"	f
+createThread	warmup2.c	/^void createThread() {$/;"	f
+currentTimeToMicroSecond	warmup2.c	/^unsigned long currentTimeToMicroSecond() {$/;"	f
+deleteFirstFromQ2	warmup2.c	/^packet *deleteFirstFromQ2() {$/;"	f
+departureTime	warmup2.c	/^	unsigned long departureTime;$/;"	m	struct:packet	file:
+filePath	warmup2.c	/^char filePath[20];$/;"	v
+fp	warmup2.c	/^FILE *fp;$/;"	v
+init	warmup2.c	/^void init() {$/;"	f
+interArrivalTime	warmup2.c	/^	unsigned int interArrivalTime;		\/\/in micro second$/;"	m	struct:packet	file:
+lambda	warmup2.c	/^double lambda = 1;		\/\/packet arriving rate (lambda packets per second)$/;"	v
+lastPacketArrivalTimeInMicroSecond	warmup2.c	/^unsigned long lastPacketArrivalTimeInMicroSecond = 0;$/;"	v
+main	warmup2.c	/^int main(int argc, char **argv) {$/;"	f
+max	cs402.h	/^#define max(/;"	d
+min	cs402.h	/^#define min(/;"	d
+move	warmup2.c	/^void move() {$/;"	f
+mu	warmup2.c	/^double mu = 0.35;	\/\/server can serve mu packets per second$/;"	v
+mutex	warmup2.c	/^pthread_mutex_t mutex;$/;"	v
+next	my402list.h	/^    struct tagMy402ListElem *next;$/;"	m	struct:tagMy402ListElem	typeref:struct:tagMy402ListElem::tagMy402ListElem
+num	warmup2.c	/^unsigned int num = 20;		\/\/total number of packets to arrive$/;"	v
+num_members	my402list.h	/^    int num_members;$/;"	m	struct:tagMy402List
+obj	my402list.h	/^    void *obj;$/;"	m	struct:tagMy402ListElem
+packet	warmup2.c	/^typedef struct packet {$/;"	s	file:
+packet	warmup2.c	/^}packet;$/;"	t	typeref:struct:packet	file:
+packetArrival	warmup2.c	/^void* packetArrival(void *arg) {$/;"	f
+packetArrivalTraceDriven	warmup2.c	/^void* packetArrivalTraceDriven(void *arg) {$/;"	f
+packetArrivedQ1	warmup2.c	/^int packetArrivedQ1 = 0;$/;"	v
+packetId	warmup2.c	/^	unsigned int packetId;$/;"	m	struct:packet	file:
+pat	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
+pat_td	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
+prev	my402list.h	/^    struct tagMy402ListElem *prev;$/;"	m	struct:tagMy402ListElem	typeref:struct:tagMy402ListElem::tagMy402ListElem
+printParamter	warmup2.c	/^void printParamter() {$/;"	f
+printTime	warmup2.c	/^void printTime() {$/;"	f
+q1	warmup2.c	/^My402List q1, q2;$/;"	v
+q2	warmup2.c	/^My402List q1, q2;$/;"	v
+q2NotEmpty	warmup2.c	/^pthread_cond_t q2NotEmpty;$/;"	v
+r	warmup2.c	/^double r = 1.5;		\/\/r tokens arrive at the bucket per second$/;"	v
+round	cs402.h	/^#define round(/;"	d
+s1	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
+s2	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
+server1	warmup2.c	/^void *server1(void *arg) {$/;"	f
+server2	warmup2.c	/^void *server2(void *arg) {$/;"	f
+serviceTime	warmup2.c	/^	unsigned int serviceTime;			\/\/in micro second$/;"	m	struct:packet	file:
+setClock	warmup2.c	/^void setClock() {$/;"	f
+setParameter	warmup2.c	/^void setParameter(int argc, char **argv) {$/;"	f
+sleepWithinTenSecond	warmup2.c	/^void sleepWithinTenSecond(unsigned long x) {$/;"	f
+start	warmup2.c	/^struct timeval start;$/;"	v	typeref:struct:timeval
+tagMy402List	my402list.h	/^typedef struct tagMy402List {$/;"	s
+tagMy402ListElem	my402list.h	/^typedef struct tagMy402ListElem {$/;"	s
+tdt	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
+tokenBucket	warmup2.c	/^int tokenBucket;$/;"	v
+tokenDeposit	warmup2.c	/^void *tokenDeposit(void *arg) {$/;"	f
+tokenRequired	warmup2.c	/^	unsigned int tokenRequired;$/;"	m	struct:packet	file:
+traceDrivenMode	warmup2.c	/^int traceDrivenMode = 0;$/;"	v

@@ -36,6 +36,8 @@ int traceDrivenMode = 0;
 
 unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 
+int packetArrivedQ1 = 0;
+
 typedef struct packet {
 	unsigned int packetId;
 	unsigned int serviceTime;			//in micro second
@@ -48,6 +50,7 @@ typedef struct packet {
 
 	unsigned int interArrivalTime;		//in micro second
 }packet;
+
 
 
 void setParameter(int argc, char **argv) {
@@ -127,7 +130,8 @@ void move() {
 		My402ListUnlink(&q1, firstElem);
 		printTime();
 		firstPacket->arrivalQ2 = currentTimeToMicroSecond();
-		int interval = firstPacket->arrivalQ2 - firstPacket->arrivalQ1;
+		int interval = firstPacket->arrivalQ2 - 
+					   firstPacket->arrivalQ1;
 		int x = interval / 1000;
 		int y = interval % 1000;
 		printf("p%d leaves Q1, time in Q1 = %d.%dms, token bucket now has %d token\n",
@@ -152,17 +156,18 @@ void* packetArrival(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
-		i++;
-		sleepWithinTenSecond(1000000/lambda);
-		pthread_mutex_lock(&mutex);
-		p = createPacket(i);
 		if(i == num) {
-			pthread_mutex_unlock(&mutex);
 			return (void*)0;
 		}
+		sleepWithinTenSecond(1000000/lambda);
+		pthread_mutex_lock(&mutex);
+		i++;
+		p = createPacket(i);
 		printTime();
 		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n",
-				p->packetId, p->tokenRequired, p->interArrivalTime/1000, p->interArrivalTime%1000);
+				p->packetId, p->tokenRequired, 
+				p->interArrivalTime/1000,
+				p->interArrivalTime%1000);
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);

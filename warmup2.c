@@ -200,7 +200,6 @@ void* packetArrivalTraceDriven(void *arg) {
 
 		pthread_mutex_unlock(&mutex);
 	}
-	return (void*)0;
 }
 
 void *tokenDeposit(void *arg) {
@@ -264,7 +263,6 @@ void *server1(void *arg) {
 				p->packetId, x, y, a ,b);
 		pthread_mutex_unlock(&mutex);
 	}
-	return (void*)0;
 }
 
 
@@ -295,7 +293,6 @@ void *server2(void *arg) {
 				p->packetId, x, y, a ,b);
 		pthread_mutex_unlock(&mutex);
 	}
-	return (void*)0;
 }
 
 

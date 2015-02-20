@@ -36,7 +36,9 @@ int traceDrivenMode = 0;
 
 unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 
-int packetArrivedQ1 = 0;
+int packetProcessed = 0;
+
+int packetArrivalThreadTerminated = 0;
 
 typedef struct packet {
 	unsigned int packetId;
@@ -156,16 +158,22 @@ void* packetArrival(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
+		pthread_mutex_lock(&mutex);
 		if(i == num) {
-			return (void*)0;
+			pthread_mutex_unlock(&mutex);
+			packetArrivalThreadTerminated = 1;
+			return NULL;
 		}
+		pthread_mutex_unlock(&mutex);
+
 		sleepWithinTenSecond(1000000/lambda);
+
 		pthread_mutex_lock(&mutex);
 		i++;
 		p = createPacket(i);
 		printTime();
 		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n",
-				p->packetId, p->tokenRequired, 
+				p->packetId, p->tokenRequired,
 				p->interArrivalTime/1000,
 				p->interArrivalTime%1000);
 		My402ListAppend(&q1,p);
@@ -179,26 +187,34 @@ void* packetArrivalTraceDriven(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
+		pthread_mutex_lock(&mutex);
 		if(i == num) {
-			return (void*)0;
+			pthread_mutex_unlock(&mutex);
+			packetArrivalThreadTerminated = 1;
+			return NULL;
 		}
 		i++;
 		p = createPacketByTraceFile(i);
+		pthread_mutex_unlock(&mutex);
+
 		usleep(p->interArrivalTime * 1000);
+
 		p->arrivalQ1 = currentTimeToMicroSecond();
 		p->interArrivalTime = p->arrivalQ1 - lastPacketArrivalTimeInMicroSecond;
 		lastPacketArrivalTimeInMicroSecond = p->arrivalQ1;
 		if(p->tokenRequired > B) {
 			printTime();
 			printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms, dropped\n",
-					i, p->tokenRequired, p->interArrivalTime / 1000, p->interArrivalTime % 1000);
+					i, p->tokenRequired, p->interArrivalTime / 1000,
+					p->interArrivalTime % 1000);
 			continue;
 		}
 
 		pthread_mutex_lock(&mutex);
 		printTime();
 		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n",
-				p->packetId, p->tokenRequired, p->interArrivalTime/1000, p->interArrivalTime%1000);
+				p->packetId, p->tokenRequired, p->interArrivalTime/1000,
+				p->interArrivalTime%1000);
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);
@@ -212,6 +228,10 @@ void *tokenDeposit(void *arg) {
 	while(1) {
 		usleep(1000000/r);
 		pthread_mutex_lock(&mutex);
+		if(packetArrivalThreadTerminated && My402ListEmpty(&q1)) {
+			pthread_mutex_unlock(&mutex);
+			return NULL;
+		}
 		i++;
 		if(tokenBucket < B) {
 			tokenBucket++;
@@ -226,7 +246,6 @@ void *tokenDeposit(void *arg) {
 		}
 		pthread_mutex_unlock(&mutex);
 	}
-	return (void*)0;
 }
 
 packet *deleteFirstFromQ2() {
@@ -284,7 +303,9 @@ void *server2(void *arg) {
 		printf("p%d begins service at S2, requesting %d.%dms of service\n",
 				p->packetId, p->serviceTime / 1000, p->serviceTime % 1000);
 		pthread_mutex_unlock(&mutex);
+
 		sleepWithinTenSecond(1000000 / mu);
+
 		pthread_mutex_lock(&mutex);
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
@@ -348,8 +369,12 @@ void createThread() {
 		pthread_create(&pat_td, NULL, packetArrivalTraceDriven, (void*)0);
 	}
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
-	pthread_create(&s1, NULL, server1, (void*)0);
+	//pthread_create(&s1, NULL, server1, (void*)0);
 	pthread_create(&s2, NULL, server2, (void*)0);
+}
+
+void joinThreads() {
+
 }
 
 void setClock() {

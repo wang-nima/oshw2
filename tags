@@ -57,6 +57,7 @@ filePath	warmup2.c	/^char filePath[20];$/;"	v
 fp	warmup2.c	/^FILE *fp;$/;"	v
 init	warmup2.c	/^void init() {$/;"	f
 interArrivalTime	warmup2.c	/^	unsigned int interArrivalTime;		\/\/in micro second$/;"	m	struct:packet	file:
+joinThreads	warmup2.c	/^void joinThreads() {$/;"	f
 lambda	warmup2.c	/^double lambda = 1;		\/\/packet arriving rate (lambda packets per second)$/;"	v
 lastPacketArrivalTimeInMicroSecond	warmup2.c	/^unsigned long lastPacketArrivalTimeInMicroSecond = 0;$/;"	v
 main	warmup2.c	/^int main(int argc, char **argv) {$/;"	f
@@ -72,9 +73,10 @@ obj	my402list.h	/^    void *obj;$/;"	m	struct:tagMy402ListElem
 packet	warmup2.c	/^typedef struct packet {$/;"	s	file:
 packet	warmup2.c	/^}packet;$/;"	t	typeref:struct:packet	file:
 packetArrival	warmup2.c	/^void* packetArrival(void *arg) {$/;"	f
+packetArrivalThreadTerminated	warmup2.c	/^int packetArrivalThreadTerminated = 0;$/;"	v
 packetArrivalTraceDriven	warmup2.c	/^void* packetArrivalTraceDriven(void *arg) {$/;"	f
-packetArrivedQ1	warmup2.c	/^int packetArrivedQ1 = 0;$/;"	v
 packetId	warmup2.c	/^	unsigned int packetId;$/;"	m	struct:packet	file:
+packetProcessed	warmup2.c	/^int packetProcessed = 0;$/;"	v
 pat	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 pat_td	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 prev	my402list.h	/^    struct tagMy402ListElem *prev;$/;"	m	struct:tagMy402ListElem	typeref:struct:tagMy402ListElem::tagMy402ListElem

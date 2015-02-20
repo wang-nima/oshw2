@@ -21,26 +21,29 @@ pthread_mutex_t mutex;
 pthread_cond_t q2NotEmpty;
 
 My402List q1, q2;
-
 int tokenBucket;
-
 pthread_t tdt, pat, s1, s2, pat_td;
-
 struct timeval start;
-
 FILE *fp;
-
 char filePath[20];
-
 int traceDrivenMode = 0;
-
 unsigned long lastPacketArrivalTimeInMicroSecond = 0;
-
 int packetProcessed = 0;
-
 int packetArrivalThreadTerminated = 0;
-
 int noPacketLeft = 0;
+//for statistics
+unsigned long long interArrivalTimeSum = 0;
+double averageInterArrivalTime;
+unsigned long long serviecTimeSum = 0;
+double averageServiceTime;
+unsigned long long timeSpentInSystemSum = 0;
+double averageTimeSpentInSystem;
+
+unsigned int tokenDropped = 0;
+unsigned int totalToken = 0;
+double tokenDropProbability;
+unsigned int packetDropped = 0;
+double packetDropProbability;
 
 typedef struct packet {
 	unsigned int packetId;
@@ -54,7 +57,6 @@ typedef struct packet {
 
 	unsigned int interArrivalTime;		//in micro second
 }packet;
-
 
 
 void setParameter(int argc, char **argv) {
@@ -178,6 +180,7 @@ void* packetArrival(void *arg) {
 				p->packetId, p->tokenRequired,
 				p->interArrivalTime / 1000,
 				p->interArrivalTime % 1000);
+		interArrivalTimeSum += p->interArrivalTime;
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);
@@ -203,12 +206,15 @@ void* packetArrivalTraceDriven(void *arg) {
 
 		p->arrivalQ1 = currentTimeToMicroSecond();
 		p->interArrivalTime = p->arrivalQ1 - lastPacketArrivalTimeInMicroSecond;
+		interArrivalTimeSum += p->interArrivalTime;
 		lastPacketArrivalTimeInMicroSecond = p->arrivalQ1;
 		if(p->tokenRequired > B) {
 			printTime();
 			printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms, dropped\n",
 					i, p->tokenRequired, p->interArrivalTime / 1000,
 					p->interArrivalTime % 1000);
+			packetDropped++;
+			packetProcessed++;
 			continue;
 		}
 
@@ -235,11 +241,13 @@ void *tokenDeposit(void *arg) {
 			return NULL;
 		}
 		i++;
+		totalToken++;
 		if(tokenBucket < B) {
 			tokenBucket++;
 			printTime();
 			printf("token t%d arrives, token bucket now has %d token\n", i, tokenBucket);
 		} else {
+			tokenDropped++;
 			printTime();
 			printf("token t%d arrives, dropped\n", i);
 		}
@@ -285,10 +293,12 @@ void *server1(void *arg) {
 		pthread_mutex_lock(&mutex);
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
-		int interval = p->departureTime- p->beginService;
+		int interval = p->departureTime - p->beginService;
+		serviecTimeSum += interval;
 		int x = interval / 1000;
 		int y = interval % 1000;
 		int intervalTotal = p->departureTime - p->arrivalQ1;
+		timeSpentInSystemSum += intervalTotal;
 		int a = intervalTotal / 1000;
 		int b = intervalTotal % 1000;
 		printf("p%d departs from S1, service time = %d.%dms, time in system = %d.%dms\n",
@@ -326,10 +336,12 @@ void *server2(void *arg) {
 		pthread_mutex_lock(&mutex);
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
-		int interval = p->departureTime- p->beginService;
+		int interval = p->departureTime - p->beginService;
+		serviecTimeSum += interval;
 		int x = interval / 1000;
 		int y = interval % 1000;
 		int intervalTotal = p->departureTime - p->arrivalQ1;
+		timeSpentInSystemSum += intervalTotal;
 		int a = intervalTotal / 1000;
 		int b = intervalTotal % 1000;
 		printf("p%d departs from S2, service time = %d.%dms, time in system = %d.%dms\n",
@@ -407,10 +419,39 @@ void joinThreads() {
 	pthread_join(tdt, NULL);
 	pthread_join(s1, NULL);
 	pthread_join(s2, NULL);
+	printTime();
+	printf("emulation ends\n\n");
 }
 
 void setClock() {
 	gettimeofday(&start, NULL);
+}
+
+void calculateStat() {
+	averageInterArrivalTime = interArrivalTimeSum * 1.0 / num / 1000000;
+	averageServiceTime = serviecTimeSum * 1.0 / num / 1000000;
+	averageTimeSpentInSystem = timeSpentInSystemSum * 1.0 / num / 1000000;
+
+	tokenDropProbability = tokenDropped * 1.0 / totalToken;
+	packetDropProbability = packetDropped * 1.0 / num;
+}
+
+void printStat() {
+	calculateStat();
+	printf("Statistics:\n\n");
+	printf("    average packet inter-arrival time = %.6g\n", averageInterArrivalTime);
+	printf("    average packet service time = %.6g\n\n", averageServiceTime);
+
+	printf("    average number of packets in Q1 = <real-value>\n");
+	printf("    average number of packets in Q2 = <real-value>\n");
+	printf("    average number of packets at S1 = <real-value>\n");
+	printf("    average number of packets at S2 = <real-value>\n\n");
+
+	printf("    average time a packet spent in system = %.6g\n", averageTimeSpentInSystem);
+	printf("    standard deviation for time spent in system = <real-value>\n\n");
+
+	printf("    token drop probability = %.6g\n", tokenDropProbability);
+	printf("    packet drop probability = %.6g\n\n", packetDropProbability);
 }
 
 int main(int argc, char **argv) {
@@ -420,6 +461,6 @@ int main(int argc, char **argv) {
 	setClock();
 	createThread();
 	joinThreads();
-	printf("haha\n");
+	printStat();
 	return 0;
 }

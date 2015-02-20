@@ -46,7 +46,11 @@ _MY402LIST_H_	my402list.h	/^#define _MY402LIST_H_$/;"	d
 anchor	my402list.h	/^    My402ListElem anchor;$/;"	m	struct:tagMy402List
 arrivalQ1	warmup2.c	/^	unsigned long arrivalQ1;			\/\/time stamps$/;"	m	struct:packet	file:
 arrivalQ2	warmup2.c	/^	unsigned long arrivalQ2;$/;"	m	struct:packet	file:
+averageInterArrivalTime	warmup2.c	/^double averageInterArrivalTime;$/;"	v
+averageServiceTime	warmup2.c	/^double averageServiceTime;$/;"	v
+averageTimeSpentInSystem	warmup2.c	/^double averageTimeSpentInSystem;$/;"	v
 beginService	warmup2.c	/^	unsigned long beginService;$/;"	m	struct:packet	file:
+calculateStat	warmup2.c	/^void calculateStat() {$/;"	f
 createPacket	warmup2.c	/^packet* createPacket(int id) {$/;"	f
 createPacketByTraceFile	warmup2.c	/^packet* createPacketByTraceFile(int id) {$/;"	f
 createThread	warmup2.c	/^void createThread() {$/;"	f
@@ -57,6 +61,7 @@ filePath	warmup2.c	/^char filePath[20];$/;"	v
 fp	warmup2.c	/^FILE *fp;$/;"	v
 init	warmup2.c	/^void init() {$/;"	f
 interArrivalTime	warmup2.c	/^	unsigned int interArrivalTime;		\/\/in micro second$/;"	m	struct:packet	file:
+interArrivalTimeSum	warmup2.c	/^unsigned long long interArrivalTimeSum = 0;$/;"	v
 joinThreads	warmup2.c	/^void joinThreads() {$/;"	f
 lambda	warmup2.c	/^double lambda = 1;		\/\/packet arriving rate (lambda packets per second)$/;"	v
 lastPacketArrivalTimeInMicroSecond	warmup2.c	/^unsigned long lastPacketArrivalTimeInMicroSecond = 0;$/;"	v
@@ -76,12 +81,15 @@ packet	warmup2.c	/^}packet;$/;"	t	typeref:struct:packet	file:
 packetArrival	warmup2.c	/^void* packetArrival(void *arg) {$/;"	f
 packetArrivalThreadTerminated	warmup2.c	/^int packetArrivalThreadTerminated = 0;$/;"	v
 packetArrivalTraceDriven	warmup2.c	/^void* packetArrivalTraceDriven(void *arg) {$/;"	f
+packetDropProbability	warmup2.c	/^double packetDropProbability;$/;"	v
+packetDropped	warmup2.c	/^unsigned int packetDropped = 0;$/;"	v
 packetId	warmup2.c	/^	unsigned int packetId;$/;"	m	struct:packet	file:
 packetProcessed	warmup2.c	/^int packetProcessed = 0;$/;"	v
 pat	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 pat_td	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 prev	my402list.h	/^    struct tagMy402ListElem *prev;$/;"	m	struct:tagMy402ListElem	typeref:struct:tagMy402ListElem::tagMy402ListElem
 printParamter	warmup2.c	/^void printParamter() {$/;"	f
+printStat	warmup2.c	/^void printStat() {$/;"	f
 printTime	warmup2.c	/^void printTime() {$/;"	f
 q1	warmup2.c	/^My402List q1, q2;$/;"	v
 q2	warmup2.c	/^My402List q1, q2;$/;"	v
@@ -93,6 +101,7 @@ s2	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 server1	warmup2.c	/^void *server1(void *arg) {$/;"	f
 server2	warmup2.c	/^void *server2(void *arg) {$/;"	f
 serviceTime	warmup2.c	/^	unsigned int serviceTime;			\/\/in micro second$/;"	m	struct:packet	file:
+serviecTimeSum	warmup2.c	/^unsigned long long serviecTimeSum = 0;$/;"	v
 setClock	warmup2.c	/^void setClock() {$/;"	f
 setParameter	warmup2.c	/^void setParameter(int argc, char **argv) {$/;"	f
 sleepWithinTenSecond	warmup2.c	/^void sleepWithinTenSecond(unsigned long x) {$/;"	f
@@ -100,7 +109,11 @@ start	warmup2.c	/^struct timeval start;$/;"	v	typeref:struct:timeval
 tagMy402List	my402list.h	/^typedef struct tagMy402List {$/;"	s
 tagMy402ListElem	my402list.h	/^typedef struct tagMy402ListElem {$/;"	s
 tdt	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
+timeSpentInSystemSum	warmup2.c	/^unsigned long long timeSpentInSystemSum = 0;$/;"	v
 tokenBucket	warmup2.c	/^int tokenBucket;$/;"	v
 tokenDeposit	warmup2.c	/^void *tokenDeposit(void *arg) {$/;"	f
+tokenDropProbability	warmup2.c	/^double tokenDropProbability;$/;"	v
+tokenDropped	warmup2.c	/^unsigned int tokenDropped = 0;$/;"	v
 tokenRequired	warmup2.c	/^	unsigned int tokenRequired;$/;"	m	struct:packet	file:
+totalToken	warmup2.c	/^unsigned int totalToken = 0;$/;"	v
 traceDrivenMode	warmup2.c	/^int traceDrivenMode = 0;$/;"	v

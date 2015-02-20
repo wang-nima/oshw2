@@ -31,6 +31,7 @@ unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 int packetProcessed = 0;
 int packetArrivalThreadTerminated = 0;
 int noPacketLeft = 0;
+
 //for statistics
 unsigned long long interArrivalTimeSum = 0;
 double averageInterArrivalTime;
@@ -38,6 +39,13 @@ unsigned long long serviecTimeSum = 0;
 double averageServiceTime;
 unsigned long long timeSpentInSystemSum = 0;
 double averageTimeSpentInSystem;
+unsigned long long timeSpentInSystemSumSquare = 0;
+
+unsigned long long totalEmulationTime;
+unsigned long long totolTimeInS1 = 0;
+unsigned long long totolTimeInS2 = 0;
+unsigned long long totolTimeInQ1 = 0;
+unsigned long long totolTimeInQ2 = 0;
 
 unsigned int tokenDropped = 0;
 unsigned int totalToken = 0;
@@ -138,6 +146,7 @@ void move() {
 		firstPacket->arrivalQ2 = currentTimeToMicroSecond();
 		int interval = firstPacket->arrivalQ2 - 
 					   firstPacket->arrivalQ1;
+		totolTimeInQ1 += interval;
 		int x = interval / 1000;
 		int y = interval % 1000;
 		printf("p%d leaves Q1, time in Q1 = %d.%dms, token bucket now has %d token\n",
@@ -265,6 +274,7 @@ packet *deleteFirstFromQ2() {
 	My402ListUnlink(&q2, firstElem);
 	printTime();
 	int interval = firstPacket->beginService - firstPacket->arrivalQ2;
+	totolTimeInQ2 += interval;
 	int x = interval / 1000;
 	int y = interval % 1000;
 	printf("p%d leaves Q2, time in Q2 = %d.%dms\n", firstPacket->packetId, x, y);
@@ -294,11 +304,13 @@ void *server1(void *arg) {
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
 		int interval = p->departureTime - p->beginService;
+		totolTimeInS1 += interval;
 		serviecTimeSum += interval;
 		int x = interval / 1000;
 		int y = interval % 1000;
 		int intervalTotal = p->departureTime - p->arrivalQ1;
 		timeSpentInSystemSum += intervalTotal;
+		timeSpentInSystemSumSquare += intervalTotal * intervalTotal;
 		int a = intervalTotal / 1000;
 		int b = intervalTotal % 1000;
 		printf("p%d departs from S1, service time = %d.%dms, time in system = %d.%dms\n",
@@ -337,11 +349,13 @@ void *server2(void *arg) {
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
 		int interval = p->departureTime - p->beginService;
+		totolTimeInS2 += interval;
 		serviecTimeSum += interval;
 		int x = interval / 1000;
 		int y = interval % 1000;
 		int intervalTotal = p->departureTime - p->arrivalQ1;
 		timeSpentInSystemSum += intervalTotal;
+		timeSpentInSystemSumSquare += intervalTotal * intervalTotal;
 		int a = intervalTotal / 1000;
 		int b = intervalTotal % 1000;
 		printf("p%d departs from S2, service time = %d.%dms, time in system = %d.%dms\n",
@@ -371,7 +385,6 @@ void init() {
 	pthread_mutex_init(&mutex, NULL);
 	//condition varibale
 	pthread_cond_init(&q2NotEmpty, NULL);
-
 	if(traceDrivenMode) {
 		fscanf(fp,"%d",&num);
 	}
@@ -421,6 +434,7 @@ void joinThreads() {
 	pthread_join(s2, NULL);
 	printTime();
 	printf("emulation ends\n\n");
+	totalEmulationTime = currentTimeToMicroSecond();
 }
 
 void setClock() {
@@ -442,13 +456,21 @@ void printStat() {
 	printf("    average packet inter-arrival time = %.6g\n", averageInterArrivalTime);
 	printf("    average packet service time = %.6g\n\n", averageServiceTime);
 
-	printf("    average number of packets in Q1 = <real-value>\n");
-	printf("    average number of packets in Q2 = <real-value>\n");
-	printf("    average number of packets at S1 = <real-value>\n");
-	printf("    average number of packets at S2 = <real-value>\n\n");
+	printf("    average number of packets in Q1 = %.6g\n",
+				totolTimeInQ1 * 1.0 / totalEmulationTime);
+	printf("    average number of packets in Q2 = %.6g\n",
+				totolTimeInQ2 * 1.0 / totalEmulationTime);
+	printf("    average number of packets at S1 = %.6g\n",
+				totolTimeInS1 * 1.0 / totalEmulationTime);
+	printf("    average number of packets at S2 = %.6g\n\n",
+				totolTimeInS2 * 1.0 / totalEmulationTime);
 
 	printf("    average time a packet spent in system = %.6g\n", averageTimeSpentInSystem);
-	printf("    standard deviation for time spent in system = <real-value>\n\n");
+	printf("    standard deviation for time spent in system = %.6g\n\n",
+				sqrt(
+				timeSpentInSystemSumSquare * 1.0 / num -
+				averageTimeSpentInSystem * averageTimeSpentInSystem
+				));
 
 	printf("    token drop probability = %.6g\n", tokenDropProbability);
 	printf("    packet drop probability = %.6g\n\n", packetDropProbability);

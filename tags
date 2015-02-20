@@ -67,6 +67,7 @@ move	warmup2.c	/^void move() {$/;"	f
 mu	warmup2.c	/^double mu = 0.35;	\/\/server can serve mu packets per second$/;"	v
 mutex	warmup2.c	/^pthread_mutex_t mutex;$/;"	v
 next	my402list.h	/^    struct tagMy402ListElem *next;$/;"	m	struct:tagMy402ListElem	typeref:struct:tagMy402ListElem::tagMy402ListElem
+noPacketLeft	warmup2.c	/^int noPacketLeft = 0;$/;"	v
 num	warmup2.c	/^unsigned int num = 20;		\/\/total number of packets to arrive$/;"	v
 num_members	my402list.h	/^    int num_members;$/;"	m	struct:tagMy402List
 obj	my402list.h	/^    void *obj;$/;"	m	struct:tagMy402ListElem

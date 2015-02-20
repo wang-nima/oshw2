@@ -40,6 +40,8 @@ int packetProcessed = 0;
 
 int packetArrivalThreadTerminated = 0;
 
+int noPacketLeft = 0;
+
 typedef struct packet {
 	unsigned int packetId;
 	unsigned int serviceTime;			//in micro second
@@ -174,8 +176,8 @@ void* packetArrival(void *arg) {
 		printTime();
 		printf("p%d arrives, needs %d tokens, inter-arrival time = %d.%dms\n",
 				p->packetId, p->tokenRequired,
-				p->interArrivalTime/1000,
-				p->interArrivalTime%1000);
+				p->interArrivalTime / 1000,
+				p->interArrivalTime % 1000);
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);
@@ -265,15 +267,21 @@ void *server1(void *arg) {
 	packet *p;
 	while(1) {
 		pthread_mutex_lock(&mutex);
-		while(My402ListEmpty(&q2)) {
+		while(My402ListEmpty(&q2) && !noPacketLeft) {
 			pthread_cond_wait(&q2NotEmpty, &mutex);
 		}
+		if(noPacketLeft) {
+			pthread_mutex_unlock(&mutex);
+			return NULL;
+		} 
 		p = deleteFirstFromQ2();
 		printTime();
 		printf("p%d begins service at S1, requesting %d.%dms of service\n",
 				p->packetId, p->serviceTime / 1000, p->serviceTime % 1000);
 		pthread_mutex_unlock(&mutex);
+
 		sleepWithinTenSecond(1000000 / mu);
+
 		pthread_mutex_lock(&mutex);
 		printTime();
 		p->departureTime = currentTimeToMicroSecond();
@@ -285,19 +293,28 @@ void *server1(void *arg) {
 		int b = intervalTotal % 1000;
 		printf("p%d departs from S1, service time = %d.%dms, time in system = %d.%dms\n",
 				p->packetId, x, y, a ,b);
+		packetProcessed++;
+		if(packetProcessed == num) {
+			noPacketLeft = 1;
+			pthread_cond_broadcast(&q2NotEmpty);
+			pthread_mutex_unlock(&mutex);
+			return NULL;
+		}
 		pthread_mutex_unlock(&mutex);
 	}
 }
 
-
-//server2 copy server1 code
 void *server2(void *arg) {
 	packet *p;
 	while(1) {
 		pthread_mutex_lock(&mutex);
-		while(My402ListEmpty(&q2)) {
+		while(My402ListEmpty(&q2) && !noPacketLeft) {
 			pthread_cond_wait(&q2NotEmpty, &mutex);
 		}
+		if(noPacketLeft) {
+			pthread_mutex_unlock(&mutex);
+			return NULL;
+		} 
 		p = deleteFirstFromQ2();
 		printTime();
 		printf("p%d begins service at S2, requesting %d.%dms of service\n",
@@ -317,9 +334,17 @@ void *server2(void *arg) {
 		int b = intervalTotal % 1000;
 		printf("p%d departs from S2, service time = %d.%dms, time in system = %d.%dms\n",
 				p->packetId, x, y, a ,b);
+		packetProcessed++;
+		if(packetProcessed == num) {
+			noPacketLeft = 1;
+			pthread_cond_broadcast(&q2NotEmpty);
+			pthread_mutex_unlock(&mutex);
+			return NULL;
+		}
 		pthread_mutex_unlock(&mutex);
 	}
 }
+
 
 
 void init() {
@@ -369,12 +394,19 @@ void createThread() {
 		pthread_create(&pat_td, NULL, packetArrivalTraceDriven, (void*)0);
 	}
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
-	//pthread_create(&s1, NULL, server1, (void*)0);
+	pthread_create(&s1, NULL, server1, (void*)0);
 	pthread_create(&s2, NULL, server2, (void*)0);
 }
 
 void joinThreads() {
-
+	if(!traceDrivenMode) {
+		pthread_join(pat, NULL);
+	} else {
+		pthread_join(pat_td, NULL);
+	}
+	pthread_join(tdt, NULL);
+	pthread_join(s1, NULL);
+	pthread_join(s2, NULL);
 }
 
 void setClock() {
@@ -387,6 +419,7 @@ int main(int argc, char **argv) {
 	printParamter();
 	setClock();
 	createThread();
-	while(1) {}
+	joinThreads();
+	printf("haha\n");
 	return 0;
 }

@@ -1,0 +1,24 @@
++-------+
+| BUILD |
++-------+
+
+make
+
++---------+
+| GRADING |
++---------+
+
+plus: 100
+
+./warmup2 -n 4 -r 7 -B 7 -P 5 -lambda 3.333 -mu 8.5 
+./warmup2 -mu 0.85 -r 0.5 -P 5 -lambda 33.33 -B 7 -n 4 
+
+./warmup2 -B 3 -t ~csci570b/public/cs402/warmup2/f0.txt 
+./warmup2 -t ~csci570b/public/cs402/warmup2/f1.txt -B 2 
+./warmup2 -B 1 -t ~csci570b/public/cs402/warmup2/f2.txt 
+./warmup2 -t ~csci570b/public/cs402/warmup2/f3.txt 
+./warmup2 -r 5 -B 2 -t ~csci570b/public/cs402/warmup2/f4.txt 
+./warmup2 -B 2 -t ~csci570b/public/cs402/warmup2/f5.txt -r 10 
+./warmup2 -t ~csci570b/public/cs402/warmup2/f6.txt -r 5 -B 2 
+./warmup2 -t ~csci570b/public/cs402/warmup2/f7.txt -B 1 -r 5 
+

@@ -28,7 +28,7 @@ pthread_t m;
 sigset_t set;
 struct timeval start;
 FILE *fp;
-char filePath[20];
+char filePath[100];
 int traceDrivenMode = 0;
 unsigned long lastPacketArrivalTimeInMicroSecond = 0;
 int packetProcessed = 0;

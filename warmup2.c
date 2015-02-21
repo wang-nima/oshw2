@@ -170,11 +170,23 @@ void sleepWithinTenSecond(unsigned long x) {
 	}
 }
 
+void cleanPacketArrival(void *arg) {
+	packet *p;
+	while(!My402ListEmpty(&q1)) {
+		printTime();
+		p = (packet*)(My402ListFirst(&q1)->obj);
+		My402ListUnlink(&q1, My402ListFirst(&q1));
+		printf("p%d removed from Q1\n", p->packetId);
+	}
+}
+
+
 void* packetArrival(void *arg) {
 	packet *p;
 	int i = 0;
 	while(1) {
 		pthread_mutex_lock(&mutex);
+		pthread_cleanup_push(cleanPacketArrival, NULL);
 		if(i == num) {
 			pthread_mutex_unlock(&mutex);
 			packetArrivalThreadTerminated = 1;
@@ -196,6 +208,7 @@ void* packetArrival(void *arg) {
 		My402ListAppend(&q1,p);
 		printTime();
 		printf("p%d enters Q1\n", i);
+		pthread_cleanup_pop(0);
 		pthread_mutex_unlock(&mutex);
 	}
 }
@@ -205,6 +218,7 @@ void* packetArrivalTraceDriven(void *arg) {
 	int i = 0;
 	while(1) {
 		pthread_mutex_lock(&mutex);
+		pthread_cleanup_push(cleanPacketArrival, NULL);
 		if(i == num) {
 			pthread_mutex_unlock(&mutex);
 			packetArrivalThreadTerminated = 1;
@@ -239,6 +253,7 @@ void* packetArrivalTraceDriven(void *arg) {
 		printTime();
 		printf("p%d enters Q1\n", i);
 
+		pthread_cleanup_pop(0);
 		pthread_mutex_unlock(&mutex);
 	}
 }
@@ -419,7 +434,6 @@ void *monitor(void* arg) {
 	int sig;
 	while(1) {
 		sigwait(&set, &sig);
-		//printf("\nhaha\n");
 		pthread_mutex_lock(&mutex);
 		noPacketLeft = 1;
 		pthread_cond_broadcast(&q2NotEmpty);

@@ -65,9 +65,11 @@ interArrivalTimeSum	warmup2.c	/^unsigned long long interArrivalTimeSum = 0;$/;"	
 joinThreads	warmup2.c	/^void joinThreads() {$/;"	f
 lambda	warmup2.c	/^double lambda = 1;		\/\/packet arriving rate (lambda packets per second)$/;"	v
 lastPacketArrivalTimeInMicroSecond	warmup2.c	/^unsigned long lastPacketArrivalTimeInMicroSecond = 0;$/;"	v
+m	warmup2.c	/^pthread_t m;$/;"	v
 main	warmup2.c	/^int main(int argc, char **argv) {$/;"	f
 max	cs402.h	/^#define max(/;"	d
 min	cs402.h	/^#define min(/;"	d
+monitor	warmup2.c	/^void *monitor(void* arg) {$/;"	f
 move	warmup2.c	/^void move() {$/;"	f
 mu	warmup2.c	/^double mu = 0.35;	\/\/server can serve mu packets per second$/;"	v
 mutex	warmup2.c	/^pthread_mutex_t mutex;$/;"	v
@@ -102,6 +104,7 @@ server1	warmup2.c	/^void *server1(void *arg) {$/;"	f
 server2	warmup2.c	/^void *server2(void *arg) {$/;"	f
 serviceTime	warmup2.c	/^	unsigned int serviceTime;			\/\/in micro second$/;"	m	struct:packet	file:
 serviecTimeSum	warmup2.c	/^unsigned long long serviecTimeSum = 0;$/;"	v
+set	warmup2.c	/^sigset_t set;$/;"	v
 setClock	warmup2.c	/^void setClock() {$/;"	f
 setParameter	warmup2.c	/^void setParameter(int argc, char **argv) {$/;"	f
 sleepWithinTenSecond	warmup2.c	/^void sleepWithinTenSecond(unsigned long x) {$/;"	f
@@ -110,10 +113,16 @@ tagMy402List	my402list.h	/^typedef struct tagMy402List {$/;"	s
 tagMy402ListElem	my402list.h	/^typedef struct tagMy402ListElem {$/;"	s
 tdt	warmup2.c	/^pthread_t tdt, pat, s1, s2, pat_td;$/;"	v
 timeSpentInSystemSum	warmup2.c	/^unsigned long long timeSpentInSystemSum = 0;$/;"	v
+timeSpentInSystemSumSquare	warmup2.c	/^unsigned long long timeSpentInSystemSumSquare = 0;$/;"	v
 tokenBucket	warmup2.c	/^int tokenBucket;$/;"	v
 tokenDeposit	warmup2.c	/^void *tokenDeposit(void *arg) {$/;"	f
 tokenDropProbability	warmup2.c	/^double tokenDropProbability;$/;"	v
 tokenDropped	warmup2.c	/^unsigned int tokenDropped = 0;$/;"	v
 tokenRequired	warmup2.c	/^	unsigned int tokenRequired;$/;"	m	struct:packet	file:
+totalEmulationTime	warmup2.c	/^unsigned long long totalEmulationTime;$/;"	v
 totalToken	warmup2.c	/^unsigned int totalToken = 0;$/;"	v
+totolTimeInQ1	warmup2.c	/^unsigned long long totolTimeInQ1 = 0;$/;"	v
+totolTimeInQ2	warmup2.c	/^unsigned long long totolTimeInQ2 = 0;$/;"	v
+totolTimeInS1	warmup2.c	/^unsigned long long totolTimeInS1 = 0;$/;"	v
+totolTimeInS2	warmup2.c	/^unsigned long long totolTimeInS2 = 0;$/;"	v
 traceDrivenMode	warmup2.c	/^int traceDrivenMode = 0;$/;"	v

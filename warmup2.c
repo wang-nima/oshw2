@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <math.h>
+#include <signal.h>
 #include "my402list.h"
 
 //global variable
@@ -23,6 +24,8 @@ pthread_cond_t q2NotEmpty;
 My402List q1, q2;
 int tokenBucket;
 pthread_t tdt, pat, s1, s2, pat_td;
+pthread_t m;
+sigset_t set;
 struct timeval start;
 FILE *fp;
 char filePath[20];
@@ -388,6 +391,9 @@ void init() {
 	if(traceDrivenMode) {
 		fscanf(fp,"%d",&num);
 	}
+	sigemptyset(&set);
+	sigaddset(&set, SIGINT);
+	sigprocmask(SIG_BLOCK, &set, 0);
 }
 
 
@@ -409,6 +415,14 @@ void printParamter() {
 	printf("\n");
 }
 
+void *monitor(void* arg) {
+	int sig;
+	while(1) {
+		sigwait(&set, &sig);
+		printf("\nhaha\n");
+	}
+	return NULL;
+}
 
 void createThread() {
 	printTime();
@@ -421,6 +435,7 @@ void createThread() {
 	pthread_create(&tdt, NULL, tokenDeposit, (void*)0);
 	pthread_create(&s1, NULL, server1, (void*)0);
 	pthread_create(&s2, NULL, server2, (void*)0);
+	pthread_create(&m, NULL, monitor, (void*)0);
 }
 
 void joinThreads() {
@@ -442,12 +457,12 @@ void setClock() {
 }
 
 void calculateStat() {
-	averageInterArrivalTime = interArrivalTimeSum * 1.0 / num / 1000000;
-	averageServiceTime = serviecTimeSum * 1.0 / num / 1000000;
-	averageTimeSpentInSystem = timeSpentInSystemSum * 1.0 / num / 1000000;
+	averageInterArrivalTime = interArrivalTimeSum * 1.0 / packetProcessed / 1000000;
+	averageServiceTime = serviecTimeSum * 1.0 / packetProcessed / 1000000;
+	averageTimeSpentInSystem = timeSpentInSystemSum * 1.0 / packetProcessed / 1000000;
 
 	tokenDropProbability = tokenDropped * 1.0 / totalToken;
-	packetDropProbability = packetDropped * 1.0 / num;
+	packetDropProbability = packetDropped * 1.0 / packetProcessed;
 }
 
 void printStat() {
@@ -468,7 +483,7 @@ void printStat() {
 	printf("    average time a packet spent in system = %.6g\n", averageTimeSpentInSystem);
 	printf("    standard deviation for time spent in system = %.6g\n\n",
 				sqrt(
-				timeSpentInSystemSumSquare * 1.0 / num -
+				timeSpentInSystemSumSquare * 1.0 / packetProcessed -
 				averageTimeSpentInSystem * averageTimeSpentInSystem
 				));
 

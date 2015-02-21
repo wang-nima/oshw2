@@ -419,7 +419,17 @@ void *monitor(void* arg) {
 	int sig;
 	while(1) {
 		sigwait(&set, &sig);
-		printf("\nhaha\n");
+		//printf("\nhaha\n");
+		pthread_mutex_lock(&mutex);
+		noPacketLeft = 1;
+		pthread_cond_broadcast(&q2NotEmpty);
+		pthread_cancel(tdt);
+		if(traceDrivenMode) {
+			pthread_cancel(pat_td);
+		} else {
+			pthread_cancel(pat);
+		}
+		pthread_mutex_unlock(&mutex);
 	}
 	return NULL;
 }
@@ -450,6 +460,7 @@ void joinThreads() {
 	printTime();
 	printf("emulation ends\n\n");
 	totalEmulationTime = currentTimeToMicroSecond();
+	//not join monitor
 }
 
 void setClock() {
